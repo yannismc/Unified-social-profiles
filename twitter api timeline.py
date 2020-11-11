@@ -5,6 +5,8 @@ auth.set_access_token("606314285-8reNCexye4Ils8UXIKJQfnsJbRDYJA8hpQdd5p2h", "tRc
 
 api = tweepy.API(auth)
 
-public_tweets = api.home_timeline()
+public_tweets = api.user_timeline(63751266)
 for tweet in public_tweets:
     print(tweet.text)
+    print(tweet.created_at)
+    print(tweet.is_quote_status)
