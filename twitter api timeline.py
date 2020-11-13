@@ -7,6 +7,6 @@ api = tweepy.API(auth)
 
 public_tweets = api.user_timeline(63751266)
 for tweet in public_tweets:
-    print(tweet.text)
+    print(tweet.text.encode('utf-8'))
     print(tweet.created_at)
     print(tweet.is_quote_status)
