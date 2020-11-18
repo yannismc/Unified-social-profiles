@@ -12,86 +12,94 @@ app = Flask(__name__)
 def welcome():
     return 'Welcome to Unified social profiles!'
 
+
+@app.route('/twitter/home')
+def home():
+    api = twitter_api()
+    public_tweets = api.home_timeline()
+    response = [tweet._json for tweet in public_tweets]
+    return jsonify(response)
+
 @app.route('/twitter/user/<int:username>')
 def profile(username):
     api = twitter_api()
 
     public_tweets = api.user_timeline(username)
-    for tweet in public_tweets:
-        user_id = tweet.user.id
-        name = tweet.user.name
-        screen_name = tweet.user.name
-        location = tweet.user.location
-        description = tweet.user.description
-        followers = tweet.user.followers_count
-        friends = tweet.user.friends_count
-        favorites = tweet.user.favourites_count
-        tweets_count = tweet.user.statuses_count
-        check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
-        tweetid = tweet.id
-        text = tweet.text
-        created_time = tweet.created_at
-        source = tweet.source
-        quoted_id = tweet.quoted_status_id
-        retweeted_id = tweet.retweeted_status
-        language = tweet.lang
-        location = tweet.place.full_name +" "+ tweet.place.country
-        latitude = tweet.coordinates.coordinates[2]
-        longitude = tweet.coordinates.coordinates[1]
-        retweets = tweet.retweetcount
-        favorites = tweet.favorite_count
-        check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
-
-        if  hasattr('tweet', 'quoted_status'):
-            tweet_= tweet.quoted_status
-            user_id = tweet_.user.id
-            name = tweet_.user.name
-            screen_name = tweet_.user.name
-            location = tweet_.user.location
-            description = tweet_.user.description
-            followers = tweet_.user.followers_count
-            friends = tweet_.user.friends_count
-            favorites = tweet_.user.favourites_count
-            tweet_s_count = tweet_.user.statuses_count
-            check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
-            tweetid = tweet_.id
-            text = tweet_.text
-            created_time = tweet_.created_at
-            source = tweet_.source
-            quoted_id = tweet_.quoted_status_id
-            retweeted_id = tweet_.retweeted_status
-            language = tweet_.lang
-            location = tweet_.place.full_name +" "+ tweet_.place.country
-            latitude = tweet_.coordinates.coordinates[2]
-            longitude = tweet_.coordinates.coordinates[1]
-            retweets = tweet_.retweetcount
-            favorites = tweet_.favorite_count
-            check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
-        if hasattr('tweet', 'retweeted_status'):
-            tweet_= tweet.retweeted_status
-            user_id = tweet_.user.id
-            name = tweet_.user.name
-            screen_name = tweet_.user.name
-            location = tweet_.user.location
-            description = tweet_.user.description
-            followers = tweet_.user.followers_count
-            friends = tweet_.user.friends_count
-            favorites = tweet_.user.favourites_count
-            tweet_s_count = tweet_.user.statuses_count
-            check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
-            tweetid = tweet_.id
-            text = tweet_.text
-            created_time = tweet_.created_at
-            source = tweet_.source
-            quoted_id = tweet_.quoted_status_id
-            retweeted_id = tweet_.retweeted_status
-            language = tweet_.lang
-            location = tweet_.place.full_name +" "+ tweet_.place.country
-            latitude = tweet_.coordinates.coordinates[2]
-            longitude = tweet_.coordinates.coordinates[1]
-            retweets = tweet_.retweetcount
-            favorites = tweet_.favorite_count
-            check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
+    # for tweet in public_tweets:
+    #     user_id = tweet.user.id
+    #     name = tweet.user.name
+    #     screen_name = tweet.user.name
+    #     location = tweet.user.location
+    #     description = tweet.user.description
+    #     followers = tweet.user.followers_count
+    #     friends = tweet.user.friends_count
+    #     favorites = tweet.user.favourites_count
+    #     tweets_count = tweet.user.statuses_count
+    #     check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
+    #     tweetid = tweet.id
+    #     text = tweet.text
+    #     created_time = tweet.created_at
+    #     source = tweet.source
+    #     quoted_id = tweet.quoted_status_id
+    #     retweeted_id = tweet.retweeted_status
+    #     language = tweet.lang
+    #     location = tweet.place.full_name +" "+ tweet.place.country
+    #     latitude = tweet.coordinates.coordinates[2]
+    #     longitude = tweet.coordinates.coordinates[1]
+    #     retweets = tweet.retweetcount
+    #     favorites = tweet.favorite_count
+    #     check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
+    #
+    #     if  hasattr('tweet', 'quoted_status'):
+    #         tweet_= tweet.quoted_status
+    #         user_id = tweet_.user.id
+    #         name = tweet_.user.name
+    #         screen_name = tweet_.user.name
+    #         location = tweet_.user.location
+    #         description = tweet_.user.description
+    #         followers = tweet_.user.followers_count
+    #         friends = tweet_.user.friends_count
+    #         favorites = tweet_.user.favourites_count
+    #         tweet_s_count = tweet_.user.statuses_count
+    #         check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
+    #         tweetid = tweet_.id
+    #         text = tweet_.text
+    #         created_time = tweet_.created_at
+    #         source = tweet_.source
+    #         quoted_id = tweet_.quoted_status_id
+    #         retweeted_id = tweet_.retweeted_status
+    #         language = tweet_.lang
+    #         location = tweet_.place.full_name +" "+ tweet_.place.country
+    #         latitude = tweet_.coordinates.coordinates[2]
+    #         longitude = tweet_.coordinates.coordinates[1]
+    #         retweets = tweet_.retweetcount
+    #         favorites = tweet_.favorite_count
+    #         check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
+    #     if hasattr('tweet', 'retweeted_status'):
+    #         tweet_= tweet.retweeted_status
+    #         user_id = tweet_.user.id
+    #         name = tweet_.user.name
+    #         screen_name = tweet_.user.name
+    #         location = tweet_.user.location
+    #         description = tweet_.user.description
+    #         followers = tweet_.user.followers_count
+    #         friends = tweet_.user.friends_count
+    #         favorites = tweet_.user.favourites_count
+    #         tweet_s_count = tweet_.user.statuses_count
+    #         check_user(user_id,name,screen_name,location,description,friends,followers,favorites,tweets_count)
+    #         tweetid = tweet_.id
+    #         text = tweet_.text
+    #         created_time = tweet_.created_at
+    #         source = tweet_.source
+    #         quoted_id = tweet_.quoted_status_id
+    #         retweeted_id = tweet_.retweeted_status
+    #         language = tweet_.lang
+    #         location = tweet_.place.full_name +" "+ tweet_.place.country
+    #         latitude = tweet_.coordinates.coordinates[2]
+    #         longitude = tweet_.coordinates.coordinates[1]
+    #         retweets = tweet_.retweetcount
+    #         favorites = tweet_.favorite_count
+    #         check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,language,location,latitude,longitude,retweets,favorites)
     response = [tweet._json for tweet in public_tweets]
     return jsonify(response)
 
@@ -173,7 +181,7 @@ def check_tweet(tweet_id,text,created_time,source,quoted_id,retweeted_id,languag
 if __name__ == '__main__':
     app.run()
 
-    
+
 @app.teardown_appcontext
 def teardown_db(exception):
     db.close()
