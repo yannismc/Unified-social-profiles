@@ -1,7 +1,7 @@
 from tweepy import OAuthHandler, API
 from flask import Flask,jsonify,_app_ctx_stack
 from json import load
-import sqlite3
+# import sqlite3
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy import create_engine,Column,ForeignKey,Integer,String,BigInteger,Unicode, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,18 +12,16 @@ app = Flask(__name__)
 def welcome():
     return 'Welcome to Unified social profiles!'
 
-
 @app.route('/twitter/home')
 def home():
     api = twitter_api()
     public_tweets = api.home_timeline()
     response = [tweet._json for tweet in public_tweets]
     return jsonify(response)
-
+    
 @app.route('/twitter/user/<int:username>')
 def profile(username):
     api = twitter_api()
-
     public_tweets = api.user_timeline(username)
     # for tweet in public_tweets:
     #     user_id = tweet.user.id

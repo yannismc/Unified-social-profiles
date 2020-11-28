@@ -22,3 +22,21 @@ _To be considered also_
 **Key questions for next meeting**
 * Which information to keep and which to discard
 * How to design the DB (content, tables, relationships)
+
+## Fourth meeting notes (28/11/2020)
+
+**Goals**
+* Finalize the database model with correct attributes' types
+* Unify the database to include also Facebook structure
+* Scrap links of media from Facebook, consider how to assign unique ID at them
+* Store domain part of urls too.
+
+**Limitations**
+* (facebook_scraper) Cannot access private profiles that require user credentials at Facebook
+
+**Actions**
+1. Make response presentable at a table through Jinga render html templates
+2. Apply twitter and Facebook crawl at 5 selected users
+
+**Key questions for next meeting**
+* Function that apply the domain part transformation in Python
