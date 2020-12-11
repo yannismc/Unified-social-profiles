@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Python Flask App - Unified social profiles</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+<link href="{{url_for('static', filename='search.css')}}" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+
+$(function() {
+  $("#btnSearch").click(function(){
+    $.post('users', $( "form" ).serialize(),
+    function(response) {
+$("#place_for_results").html(response);
+}).fail(function(error) {
+        console.log(error);
+});
+});
+});
+</script>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="header">
+      <nav>
+        <ul class="nav nav-pills pull-right">
+          <li role="presentation"><a href="/">Home</a>
+          </li>
+          <li role="presentation"  class="active"><a href="#">Users</a>
+          </li>
+          <li role="presentation"><a href="#">Posts/Tweets</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <h3 class="text-muted">Python Flask App</h3>
+  </div>
+
+      <div class="jumbotron">
+        <h1>Search user:</h1>
+        <form class="form-user-search">
+        <label for="inputNameTwitter" class="sr-only">Twitter User Name</label>
+        <input type="name" name="inputNameTwitter" id="inputNameTwitter" class="form-control" placeholder="Twitter username" autofocus>
+        <label for="inputNameFacebook" class="sr-only">Facebook User Name</label>
+        <input type="name" name="inputNameFacebook" id="inputNameFacebook" class="form-control" placeholder="Facebook username" autofocus>
+        <label for="inputNameInstagram" class="sr-only">Instagram User Name</label>
+        <input type="name" name="inputNameInstagram" id="inputNameInstagram" class="form-control" placeholder="Instagram username" autofocus>
+
+        <button id="btnSearch" class="btn btn-lg btn-primary btn-block" type="button">Search</button>
+      </form>
+      </div>
+
+<div id="place_for_results"></div>
+
+
+      <footer class="footer">
+          <p>&copy; 2020, backend: BPa - frontend:JAx</p>
+      </footer>
+
+    </div>
+    </body>
+
+    </html>

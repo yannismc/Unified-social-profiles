@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Python Flask App - Unified social profiles</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+</head>
+
+<body style="padding-top: 40px; padding-bottom: 40px;">
+
+  <div class="container">
+    <div class="header">
+      <nav>
+        <ul class="nav nav-pills pull-right">
+          <li role="presentation" class="active"><a href="#">Home</a>
+          </li>
+          <li role="presentation"><a href="/users">Users</a>
+          </li>
+          <li role="presentation"><a href="#">Posts/Tweets</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <h3 class="text-muted">Python Flask App</h3>
+  </div>
+
+  <div class="jumbotron">
+              <h1>Unified social profiles</h1>
+              <p class="lead"></p>
+              <p ><img width="80%" src="{{url_for('static', filename='logo.png')}}" align="middle"/>
+              </p>
+          </div>
+
+  <footer class="footer">
+      <p>&copy; 2020, backend: BPa - frontend: JAx</p>
+  </footer>
+
+</div>
+</body>
+
+</html>

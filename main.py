@@ -1,6 +1,7 @@
 from tweepy import OAuthHandler, API
-from flask import Flask,jsonify,_app_ctx_stack
+from flask import Flask,jsonify,_app_ctx_stack,render_template, request
 from json import load
+import facebook_scraper
 # import sqlite3
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy import create_engine,Column,ForeignKey,Integer,String,BigInteger,Unicode, DateTime, Float
@@ -10,7 +11,29 @@ app = Flask(__name__)
 
 @app.route('/')
 def welcome():
-    return 'Welcome to Unified social profiles!'
+    return render_template('index.html')
+
+@app.route('/users', methods=['GET', 'POST'])
+def render_search():
+    # POST: Search string
+    if request.method == 'POST':
+        print(request.form)
+        print(request.values)
+        _twitter_name = request.form.get('inputNameTwitter')
+        _fb_name = request.form.get('inputNameFacebook')
+        # read the posted values from the UI
+        if _twitter_name:
+            api = twitter_api()
+            public_tweets = api.user_timeline(_twitter_name)
+            return render_template('results.html', public_tweets=public_tweets)
+        if _fb_name:
+            get_p = facebook_scraper.get_posts(_fb_name, pages=2)
+            post_list = []
+            for post in get_p:
+                post_list.append(post)
+            return render_template('results.html', user= _fb_name, public_posts=post_list)
+    # GET: Serve search page
+    return render_template('user_search.html')
 
 @app.route('/twitter/home')
 def home():
@@ -18,8 +41,8 @@ def home():
     public_tweets = api.home_timeline()
     response = [tweet._json for tweet in public_tweets]
     return jsonify(response)
-    
-@app.route('/twitter/user/<int:username>')
+
+@app.route('/twitter?user=<username>',methods=['POST'])
 def profile(username):
     api = twitter_api()
     public_tweets = api.user_timeline(username)

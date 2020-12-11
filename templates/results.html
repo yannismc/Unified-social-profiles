@@ -1,0 +1,44 @@
+<label id="value_lable">
+{% if public_tweets%}
+    User id: {{public_tweets[1].user.id}}<br>
+    Username: {{public_tweets[1].user.name}}<br>
+    Location: {{public_tweets[1].user.location}}<br>
+    Description: {{public_tweets[1].user.description}}<br>
+    Followers: {{public_tweets[1].user.followers_count}}<br>
+    Friends: {{public_tweets[1].user.friends_count}}<br>
+    Favorites: {{public_tweets[1].user.favourites_count}}<br>
+    Tweets: {{public_tweets[1].user.statuses_count}}<br>
+    {% for tweet in public_tweets %}
+    Tweet id: {{tweet.id}}<br>
+    Text: {{tweet.text}}<br>
+    Date-Time: {{tweet.created_at}}<br>
+     Source: {{tweet.source}}<br>
+     Language: {{tweet.lang}}<br>
+     Location: {{tweet.place.full_name +" "+ tweet.place.country}}<br>
+     Latitude: {{tweet.coordinates.coordinates[2]}}<br>
+     Longitude: {{tweet.coordinates.coordinates[1]}}<br>
+     Retweets: {{tweet.retweetcount}}<br>
+     Favorites: {{tweet.favorite_count}}<br>
+    {% endfor %}
+{% endif %}
+
+{% if public_posts%}
+User id: {{public_posts[1].user_id}}
+Username: {{user}}<br>
+{% for post in public_posts %}
+Post id: {{post.post_id}}<br>
+Text: {{post.text}}<br>
+Shared text: {{post.shared_text}}
+Date-Time: {{post.time}}<br>
+Image: <img src="{{post.image}}"><br>
+Video: <img src="{{post.video_thumbnail}}"><br>
+Video id: {{post.video_id}}<br>
+Likes: {{post.likes}}<br>
+Comments: {{post.comments}}<br>
+Shares: {{post.shares}}<br>
+link: <a href="{{post.link}}">{{post.link}}</a><br>
+Url: <a href="{{post.post_url}}">{{post.post_url}}</a><br>
+{% endfor %}
+{% endif %}
+
+</label>
