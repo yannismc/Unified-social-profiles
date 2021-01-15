@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from tweepy import OAuthHandler, API
 from flask import Flask,jsonify,_app_ctx_stack,render_template, request
 from json import load
@@ -25,7 +27,18 @@ def render_search():
         if _twitter_name:
             api = twitter_api()
             public_tweets = api.user_timeline(_twitter_name)
-            return render_template('results.html', public_tweets=public_tweets)
+            print(render_template('results.html',
+            cols_user= ['User id','Username','Location','Description','Followers',
+            'Friends','Favorites','Tweets'],cols_tweets=['Tweet id','Text',
+            'Date-Time','Source','Language','Location','Latitude','Longitude',
+            'Favorites','Retweets'],
+            rows=public_tweets))
+            return render_template('results.html',
+            cols_user= ['User id','Username','Location','Description','Followers',
+            'Friends','Favorites','Tweets'],cols_tweets=['Tweet id','Text',
+            'Date-Time','Source','Language','Location','Latitude','Longitude',
+            'Favorites','Retweets'],
+            public_tweets=public_tweets)
         if _fb_name:
             get_p = facebook_scraper.get_posts(_fb_name, pages=2)
             post_list = []

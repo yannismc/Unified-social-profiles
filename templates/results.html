@@ -1,28 +1,62 @@
-<label id="value_lable">
-{% if public_tweets%}
-    User id: {{public_tweets[1].user.id}}<br>
-    Username: {{public_tweets[1].user.name}}<br>
-    Location: {{public_tweets[1].user.location}}<br>
-    Description: {{public_tweets[1].user.description}}<br>
-    Followers: {{public_tweets[1].user.followers_count}}<br>
-    Friends: {{public_tweets[1].user.friends_count}}<br>
-    Favorites: {{public_tweets[1].user.favourites_count}}<br>
-    Tweets: {{public_tweets[1].user.statuses_count}}<br>
-    {% for tweet in public_tweets %}
-    Tweet id: {{tweet.id}}<br>
-    Text: {{tweet.text}}<br>
-    Date-Time: {{tweet.created_at}}<br>
-     Source: {{tweet.source}}<br>
-     Language: {{tweet.lang}}<br>
-     Location: {{tweet.place.full_name +" "+ tweet.place.country}}<br>
-     Latitude: {{tweet.coordinates.coordinates[2]}}<br>
-     Longitude: {{tweet.coordinates.coordinates[1]}}<br>
-     Retweets: {{tweet.retweetcount}}<br>
-     Favorites: {{tweet.favorite_count}}<br>
+
+<table class="table table-striped table-hover">
+{% if public_tweets %}
+<thead>
+  <tr>
+    {% for col in cols_user %}
+    <th scope="col">{{col}}</th>
     {% endfor %}
+  </tr>
+  </thead>
+    <tbody>
+      {% for row in public_tweets %}
+      {% if loop.index == 1 %}
+      <tr>
+      <td>{{row.user.id}}</td>
+      <td>{{row.user.name}}</td>
+      <td>{{row.user.location}}</td>
+      <td>{{row.user.description}}</td>
+      <td>{{row.user.followers_count}}</td>
+      <td>{{row.user.friends_count}}</td>
+      <td>{{row.user.favourites_count}}</td>
+      <td>{{row.user.statuses_count}}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+      <thead>
+        <tr>
+          {% for col in cols_tweets %}
+          <th scope="col">{{col}}</th>
+          {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+          {% for row in public_tweets %}
+          <tr>
+          <td>{{row.id}}</td>
+          <td>{{row.text}}</td>
+          ω<td>{{row.created_at}}</td>
+          <td>{{row.source}}</td>
+          <td>{{row.lang}}</td>
+          {% if row.place.full_name %}
+          <td>{{row.place.full_name +" "+ row.place.country}}</td>
+          <td>{{row.coordinates.coordinates[2]}}</td>
+          <td>{{row.coordinates.coordinates[1]}}</td>
+          {% else %}
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+          {% endif %}
+          <td>{{row.retweetcount}}</td>
+          <td>{{row.favorite_count}}</td>
+          </tr>
+          {% endfor %}
+  </tbody>
+</table>
 {% endif %}
 
-{% if public_posts%}
+{% if public_posts %}
 User id: {{public_posts[1].user_id}}
 Username: {{user}}<br>
 {% for post in public_posts %}
@@ -41,4 +75,4 @@ Url: <a href="{{post.post_url}}">{{post.post_url}}</a><br>
 {% endfor %}
 {% endif %}
 
-</label>
+</table>

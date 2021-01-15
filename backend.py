@@ -2,11 +2,11 @@
 """
 Created on Sun Nov 15 00:09:30 2020
 
-@author: tampn
+
 """
 
-
 import MySQLdb
+#import mysql.connector as MySQLdb
 import facebook_scraper
 import tweepy
 
@@ -16,21 +16,33 @@ import tweepy
 def CreateTableFBUsers():
     # Drop table if it already exist using execute() method.
     cursor.execute("DROP TABLE IF EXISTS fb_users")
-      
+
     # Create table as per requirement
-    sql = """CREATE TABLE fb_users (UID BIGINT PRIMARY KEY NOT NULL, NAME VARCHAR(255) NOT NULL)"""
-    	    
+    sql = """CREATE TABLE fb_users (
+    UID BIGINT NOT NULL,
+    NAME VARCHAR(255) NOT NULL,
+    PRIMARY KEY (UID))"""
+
     cursor.execute(sql)
-    
+
 def CreateTableFBPosts():
     # Drop table if it already exist using execute() method.
     cursor.execute("DROP TABLE IF EXISTS fb_posts")
-      
+
     # Create table as per requirement
-    sql = """CREATE TABLE fb_posts (PID BIGINT PRIMARY KEY NOT NULL, UID BIGINT NOT NULL, TITLE VARCHAR(1024), LIKES INT, COMMENTS INT, FOREIGN KEY (UID) REFERENCES fb_users)"""
-    	    
-    cursor.execute(sql)             
-    
+    sql = """CREATE TABLE fb_posts (
+    PID BIGINT NOT NULL,
+    UID_POST BIGINT NOT NULL,
+    TITLE VARCHAR(1024),
+    LIKES INT,
+    COMMENTS INT,
+    SHARES INT,
+PRIMARY KEY (PID),
+FOREIGN KEY (UID_POST)
+ REFERENCES fb_users(UID))"""
+
+    cursor.execute(sql)
+
 
 def insertValueFBUsers(user_id, fb_user):
   sql = """INSERT INTO fb_users (UID, NAME) \
@@ -45,13 +57,15 @@ def insertValueFBUsers(user_id, fb_user):
   except:
     # Rollback in case there is any error
     db.rollback()
+
+
+def insertValueFBPosts(post_id, user_id, title, likes, comments, shares):
+  if((post_id == 'None') or (user_id == 'None')):
+      return
+  sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, LIKES, COMMENTS, SHARES) \
+	VALUES ('%d', '%d', '%s', '%d', '%d', '%d')""" % \
+	(int(post_id), int(user_id), title, likes, comments, shares)
     
-
-def insertValueFBPosts(post_id, user_id, title, likes, comments):
-  sql = """INSERT INTO fb_posts (PID, UID, TITLE, LIKES, COMMENTS) \
-	VALUES ('%d', '%d', '%s', '%d', '%d')""" % \
-	(int(post_id), int(user_id), title, likes, comments)
-
   try:
     # Execute the SQL command
     cursor.execute(sql)
@@ -60,25 +74,25 @@ def insertValueFBPosts(post_id, user_id, title, likes, comments):
   except:
     # Rollback in case there is any error
     db.rollback()
-    
+
 
 def RecordFBValuesToDB(fb_user, post_list):
     user_id = post_list[0]['user_id']
     insertValueFBUsers(user_id, fb_user)
 
-
+# key from dictionaries
     for i in range (0, len(post_list)):
         post = post_list[i]
-        insertValueFBPosts(str(post['post_id']), user_id, str(post['text']), int(post['likes']), int(post['comments']))
-        
-        
+        insertValueFBPosts(str(post['post_id']), user_id, str(post['text']), int(post['likes']), int(post['comments']), int(post['shares']))
+
+
 def fb_scraper(fb_user):
-    get_p = facebook_scraper.get_posts(fb_user, pages=2, credentials=('bilospap.2020@gmail.com', 'bil.1994!!$$'))
+    get_p = facebook_scraper.get_posts(fb_user, pages=2)
     post_list = []
 
     for post in get_p:
         post_list.append(post)
-    
+
     return post_list
 
 
@@ -87,21 +101,36 @@ def fb_scraper(fb_user):
 def CreateTableTwitterUsers():
     # Drop table if it already exist using execute() method.
     cursor.execute("DROP TABLE IF EXISTS twitter_users")
-      
+
     # Create table as per requirement
-    sql = """CREATE TABLE twitter_users (UID BIGINT PRIMARY KEY NOT NULL, NAME VARCHAR(255) NOT NULL)"""
-    	    
-    cursor.execute(sql)    
-    
-    
+    sql = """CREATE TABLE twitter_users (
+    UID BIGINT NOT NULL,
+    NAME VARCHAR(255) NOT NULL,
+    PRIMARY KEY (UID))"""
+
+    cursor.execute(sql)
+
+
 def CreateTableTwitterPosts():
     # Drop table if it already exist using execute() method.
     cursor.execute("DROP TABLE IF EXISTS twitter_tweets")
-      
+
     # Create table as per requirement
-    sql = """CREATE TABLE twitter_tweets (TID BIGINT PRIMARY KEY NOT NULL, UID BIGINT NOT NULL, TITLE VARCHAR(1024), RETWEET_COUNT INT, FAVORITE_COUNT INT, FOREIGN KEY (UID) REFERENCES twitter_users)"""
-    	    
-    cursor.execute(sql)  
+    sql = """CREATE TABLE twitter_tweets (
+    TID BIGINT NOT NULL,
+    UID_TWEET BIGINT NOT NULL,
+    TITLE VARCHAR(1024),
+    RETWEET_COUNT INT,
+    FAVORITE_COUNT INT,
+    CREATED_AT VARCHAR(1024),
+    LANGUAGE VARCHAR(1024),
+    SOURCE VARCHAR(1024),
+    HASHTAGS VARCHAR(1024),
+    PRIMARY KEY (TID),
+    FOREIGN KEY (UID_TWEET)
+    REFERENCES twitter_users(UID))"""
+
+    cursor.execute(sql)
 
 def insertValueTwitterUsers(user_id, twitter_user):
   sql = """INSERT INTO twitter_users (UID, NAME) \
@@ -115,13 +144,13 @@ def insertValueTwitterUsers(user_id, twitter_user):
     db.commit()
   except:
     # Rollback in case there is any error
-    db.rollback()   
+    db.rollback()
 
-def insertValueTwitterPosts(tweet_id, user_id, title, retweet_count, favorite_count):
-  sql = """INSERT INTO twitter_tweets (TID, UID, TITLE, RETWEET_COUNT, FAVORITE_COUNT) \
-	VALUES ('%d', '%d', '%s', '%d', '%d')""" % \
-	(int(tweet_id), int(user_id), title, retweet_count, favorite_count)
-
+def insertValueTwitterPosts(tweet_id, user_id, title, retweet_count, favorite_count, created_at, lang, source_url, hashtags):
+  sql = """INSERT INTO twitter_tweets (TID, UID_TWEET, TITLE, RETWEET_COUNT, FAVORITE_COUNT, CREATED_AT, LANGUAGE, SOURCE, HASHTAGS) \
+	VALUES ('%d', '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%s')""" % \
+	(int(tweet_id), int(user_id), title, retweet_count, favorite_count, created_at, lang, source_url, hashtags)
+    
   try:
     # Execute the SQL command
     cursor.execute(sql)
@@ -129,7 +158,7 @@ def insertValueTwitterPosts(tweet_id, user_id, title, retweet_count, favorite_co
     db.commit()
   except:
     # Rollback in case there is any error
-    db.rollback()    
+    db.rollback()
 
 
 
@@ -139,27 +168,38 @@ def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
     for i in range (0, len(tweets_list)):
         tweet_model = tweets_list[i]
         tweet = tweet_model._json
-        insertValueTwitterPosts(str(tweet['id']), user_id, str(tweet['full_text']), int(tweet['retweet_count']), int(tweet['favorite_count']))
+        #Get the source url
+        source_url = 'https://twitter.com/' + str(twitter_user) + '/status/' + str(tweet['id'])
+        
+        #Get the hashtags
+        hashtags = ''
+        for j in range (0, len(tweet['entities']['hashtags'])):
+            if(j == len(tweet['entities']['hashtags'])-1):
+                hashtags += tweet['entities']['hashtags'][j]['text']
+            else:
+                hashtags += tweet['entities']['hashtags'][j]['text'] + ', '
+        
+        insertValueTwitterPosts(str(tweet['id']), user_id, str(tweet['full_text']), int(tweet['retweet_count']), int(tweet['favorite_count']), str(tweet['created_at']), str(tweet['lang']), str(source_url), str(hashtags))
 
 
 def twitter_api(twitter_user):
     auth = tweepy.OAuthHandler("ftQlu6bo1bNANdyldduBhzVaH", "aU9St3CFR2m6IlSLKEcSzdOghojQCV7K2HOniLG8BjA05EjHds")
     auth.set_access_token("606314285-0aWgonCbBFS10Bv0BEMSi94gY14tjNxB6Rrb21jc", "l6GTdpPfe5LooPgdzluDwSHbnEyJRf4EzilTpMSxXI51y")
-    
+
     api = tweepy.API(auth)
-    
-    # fetching the user 
-    user = api.get_user(twitter_user) 
-      
-    # fetching the ID 
-    user_id = user.id_str 
-    
+
+    # fetching the user
+    user = api.get_user(twitter_user)
+
+    # fetching the ID
+    user_id = user.id_str
+
     tweets_list = []
 
     for status in tweepy.Cursor(api.user_timeline, twitter_user, tweet_mode="extended").items():
         tweets_list.append(status)
-    
-    return user_id, tweets_list  
+
+    return user_id, tweets_list
 
 
 
@@ -167,7 +207,7 @@ def twitter_api(twitter_user):
 db = 0
 # Open database connection
 try:
-    db = MySQLdb.connect(host="localhost", use_unicode = True, charset = "utf8", user="root", passwd="", db="bilos_db")
+    db = MySQLdb.connect(host="localhost", use_unicode = True, charset = "utf8", user="root", passwd="", db="socialmedia_db")
 except Exception as e:
     print ("DB connection error!\n")
 # prepare a cursor object using cursor() method
@@ -197,7 +237,3 @@ db.close()
 
 
 #------------------------------ END MAIN PROGRAMM ------------------------------
-    
-   
-
-
