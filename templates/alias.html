@@ -9,8 +9,8 @@
 <script>
 
 $(function() {
-  $("#btnSearch").click(function(){
-    $.post('users', $( "form" ).serialize(),
+  $("#btnAlias").click(function(){
+    $.post('alias', $("#aliaSelect").serialize(),
     function(response) {
 $("#place_for_results").html(response);
 }).fail(function(error) {
@@ -29,9 +29,9 @@ $("#place_for_results").html(response);
         <ul class="nav nav-pills pull-right">
           <li role="presentation"><a href="/">Home</a>
           </li>
-          <li role="presentation"><a href="/alias">Aliases</a>
+          <li role="presentation" class="active"><a href="/alias">Aliases</a>
           </li>
-          <li role="presentation"  class="active"><a href="#">Users</a>
+          <li role="presentation"><a href="/users">Users</a>
           </li>
           <li role="presentation"><a href="#">Posts/Tweets</a>
           </li>
@@ -42,17 +42,16 @@ $("#place_for_results").html(response);
   </div>
 
       <div class="jumbotron">
-        <h1>Search user:</h1>
-        <form class="form-user-search">
-        <label for="inputNameTwitter" class="sr-only">Twitter User Name</label>
-        <input type="name" name="inputNameTwitter" id="inputNameTwitter" class="form-control" placeholder="Twitter username" autofocus>
-        <label for="inputNameFacebook" class="sr-only">Facebook User Name</label>
-        <input type="name" name="inputNameFacebook" id="inputNameFacebook" class="form-control" placeholder="Facebook username" autofocus>
-        <label for="inputNameInstagram" class="sr-only">Instagram User Name</label>
-        <input type="name" name="inputNameInstagram" id="inputNameInstagram" class="form-control" placeholder="Instagram username" autofocus>
+        <h1>Aliases:</h1>
+        <form class="form-user-alias">
+          <select name="aid" class="alias-class" id="aliaSelect">
+            {% for item in items %}
+            <option value="{{ item[1:3] }}">{{ item[0] }}</option>
+            {% endfor %}
+          </select>
+          <button id="btnAlias" class="btn btn-lg btn-primary btn-block" type="button">Show</button>
 
-        <button id="btnSearch" class="btn btn-lg btn-primary btn-block" type="button">Search</button>
-      </form>
+        </form>
       </div>
 
 <div id="place_for_results"></div>
