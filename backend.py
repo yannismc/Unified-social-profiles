@@ -9,6 +9,8 @@ import MySQLdb
 #import mysql.connector as MySQLdb
 import facebook_scraper
 import tweepy
+import csv
+from pandas import read_csv
 
 #------------------------------ FB FUNCTIONS ------------------------------
 
@@ -106,6 +108,10 @@ def CreateTableTwitterUsers():
     sql = """CREATE TABLE twitter_users (
     UID BIGINT NOT NULL,
     NAME VARCHAR(255) NOT NULL,
+    FAVORITES_COUNT BIGINT NOT NULL,
+    FOLLOWERS_COUNT BIGINT NOT NULL,
+    FRIENDS_COUNT BIGINT NOT NULL,
+    TWEETS_COUNT BIGINT NOT NULL,
     PRIMARY KEY (UID))"""
 
     cursor.execute(sql)
@@ -132,10 +138,10 @@ def CreateTableTwitterPosts():
 
     cursor.execute(sql)
 
-def insertValueTwitterUsers(user_id, twitter_user):
-  sql = """INSERT INTO twitter_users (UID, NAME) \
-	VALUES ('%d', '%s')""" % \
-	(int(user_id), str(twitter_user))
+def insertValueTwitterUsers(user_id, twitter_user, favourites_count, followers_count, friends_count, statuses_count):
+  sql = """INSERT INTO twitter_users (UID, NAME, FAVORITES_COUNT, FOLLOWERS_COUNT, FRIENDS_COUNT, TWEETS_COUNT) \
+	VALUES ('%d', '%s', '%d', '%d', '%d', '%d')""" % \
+	(int(user_id), str(twitter_user), int(favourites_count), int(followers_count), int(friends_count), int(statuses_count))
 
   try:
     # Execute the SQL command
@@ -163,8 +169,13 @@ def insertValueTwitterPosts(tweet_id, user_id, title, retweet_count, favorite_co
 
 
 def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
-    insertValueTwitterUsers(user_id, twitter_user)
-
+    tweet_model = tweets_list[0]
+    tweet = tweet_model._json
+    tweet_usr = tweet['user']
+    
+    insertValueTwitterUsers(user_id, twitter_user, tweet_usr['favourites_count'], tweet_usr['followers_count'], tweet_usr['friends_count'], tweet_usr['statuses_count'])
+    
+    
     for i in range (0, len(tweets_list)):
         tweet_model = tweets_list[i]
         tweet = tweet_model._json
@@ -196,7 +207,7 @@ def twitter_api(twitter_user):
 
     tweets_list = []
 
-    for status in tweepy.Cursor(api.user_timeline, twitter_user, tweet_mode="extended").items():
+    for status in tweepy.Cursor(api.user_timeline, twitter_user, tweet_mode="extended").items(5):
         tweets_list.append(status)
 
     return user_id, tweets_list
@@ -219,17 +230,25 @@ CreateTableTwitterUsers()
 CreateTableTwitterPosts()
 
 
-fb_user         = ['ERTformula1', 'DonaldTrump']
-twitter_user    = ['VasilisPapadak2']
+try:
+    df = read_csv("usernames_.csv",encoding = "ISO-8859-7",delimiter=";")
+except:
+    print ("Usernames file error!\n")
+    df=[]
 
-for i in range(0, len(fb_user)):
-    post_list = fb_scraper(fb_user[i])
-    RecordFBValuesToDB(fb_user[i], post_list)
+for fb_user in df["Facebook"]:
+    post_list = fb_scraper(fb_user)
+    RecordFBValuesToDB(fb_user, post_list)
 
 
-for i in range(0, len(twitter_user)):
-    user_id, tweets_list = twitter_api(twitter_user[i])
-    RecordTwitterValuesToDB(twitter_user[i], user_id, tweets_list)
+for twitter_user in df["Twitter"]:
+    user_id, tweets_list = twitter_api(twitter_user)
+    RecordTwitterValuesToDB(twitter_user, user_id, tweets_list)
+
+
+
+
+
 
 
  # disconnect from server
