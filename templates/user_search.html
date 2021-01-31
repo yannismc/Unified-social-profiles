@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 <link href="{{url_for('static', filename='search.css')}}" rel="stylesheet">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!--Search button-->
 <script>
-
 $(function() {
   $("#btnSearch").click(function(){
     $.post('users', $( "form" ).serialize(),
@@ -31,9 +31,9 @@ $("#place_for_results").html(response);
           </li>
           <li role="presentation"><a href="/alias">Aliases</a>
           </li>
-          <li role="presentation"  class="active"><a href="#">Users</a>
+          <li role="presentation" class="active"><a href="/users">Users</a>
           </li>
-          <li role="presentation"><a href="#">Posts/Tweets</a>
+          <li role="presentation"><a href="/analytics">Posts/Tweets</a>
           </li>
         </ul>
       </nav>

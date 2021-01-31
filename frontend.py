@@ -1,18 +1,32 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask,jsonify,_app_ctx_stack,render_template, request
+from flask import Flask,jsonify,render_template, request
 from json import load
 import mysql.connector as MySQLdb
 import ast
+import tweepy
+import plotly.express as px
+from pandas import DataFrame, merge
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+
 
 #------------------------------ FB FUNCTIONS ------------------------------
 def SearchTableFBUsers(user_name):
-    sql = """
-    SELECT NAME,TITLE,SHARES,COMMENTS,LIKES
-    FROM `fb_posts`
-    INNER JOIN `fb_users` ON `fb_users`.UID=`fb_posts`.UID_POST
-    WHERE `fb_users`.UID=%s
-    """
+    if type(user_name) is int:
+        sql = """
+        SELECT NAME,TITLE,TIME,SHARES,COMMENTS,LIKES
+        FROM `fb_posts`
+        INNER JOIN `fb_users` ON `fb_users`.UID=`fb_posts`.UID_POST
+        WHERE `fb_users`.UID=%s
+        """
+    if type(user_name) is str:
+        sql = """SELECT NAME,TITLE,TIME,SHARES,COMMENTS,LIKES
+            FROM `fb_posts`
+            INNER JOIN `fb_users` ON `fb_users`.UID=`fb_posts`.UID_POST
+            WHERE `fb_users`.NAME=%s
+            """
     user_search=(str(user_name),)
     try:
         # Execute the SQL command
@@ -24,13 +38,22 @@ def SearchTableFBUsers(user_name):
     return sql_results
 #------------------------------ TWITTER FUNCTIONS ------------------------------
 def SearchTableTwitterUsers(user_name):
-    sql = """
-    SELECT NAME,FOLLOWERS_COUNT, FRIENDS_COUNT,FAVORITES_COUNT, TWEETS_COUNT,
-    TITLE,CREATED_AT,HASHTAGS,SOURCE,LANGUAGE,FAVORITE_COUNT,RETWEET_COUNT
-    FROM `twitter_tweets`
-    INNER JOIN `twitter_users` ON `twitter_users`.UID=`twitter_tweets`.UID_TWEET
-    WHERE `twitter_users`.UID=%s
-    """
+    if type(user_name) is int:
+        sql = """
+        SELECT NAME,FOLLOWERS_COUNT, FRIENDS_COUNT,FAVORITES_COUNT, TWEETS_COUNT,
+        TITLE,CREATED_AT,HASHTAGS,SOURCE,LANGUAGE,FAVORITE_COUNT,RETWEET_COUNT
+        FROM `twitter_tweets`
+        INNER JOIN `twitter_users` ON `twitter_users`.UID=`twitter_tweets`.UID_TWEET
+        WHERE `twitter_users`.UID=%s
+        """
+    if type(user_name) is str:
+        sql = """
+        SELECT NAME,FOLLOWERS_COUNT, FRIENDS_COUNT,FAVORITES_COUNT, TWEETS_COUNT,
+        TITLE,CREATED_AT,HASHTAGS,SOURCE,LANGUAGE,FAVORITE_COUNT,RETWEET_COUNT
+        FROM `twitter_tweets`
+        INNER JOIN `twitter_users` ON `twitter_users`.UID=`twitter_tweets`.UID_TWEET
+        WHERE `twitter_users`.NAME=%s
+        """
     user_search=(str(user_name),)
     try:
         # Execute the SQL command
@@ -46,9 +69,9 @@ def twitter_api():
     # Load credentials from json file
     with open("twitter_credentials.json", "r") as file:
         creds = load(file)
-    auth = OAuthHandler(creds['CONSUMER_KEY'], creds['CONSUMER_SECRET'])
+    auth = tweepy.OAuthHandler(creds['CONSUMER_KEY'], creds['CONSUMER_SECRET'])
     auth.set_access_token(creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
-    return API(auth)
+    return tweepy.API(auth)
 
 #------------------------------ENUMERATE ALIAS---------------------------------
 def enumerateAlias():
@@ -59,6 +82,26 @@ def enumerateAlias():
     except:
         print('EnumerateAlias:DB error')
     return sql_results
+
+#------------------------------CLEAN DATAFRAME---------------------------------
+
+def clean_data(list_of_tuples,type):
+    if type == 'tweets':
+        df = DataFrame(list_of_tuples, columns=['NAME',
+        'FOLLOWERS_COUNT', 'FRIENDS_COUNT','FAVORITES_COUNT',
+        'TWEETS_COUNT','TITLE',
+        'created_at',
+        'HASHTAGS','SOURCE','LANGUAGE',
+        'favorite_count','retweet_count'])
+        clean_df=df[['created_at','retweet_count','favorite_count']]
+
+    if type == 'posts':
+        df= DataFrame(list_of_tuples, columns=['NAME','TITLE',
+        'time','shares','comments','likes'])
+        clean_df=df[['time','shares','comments','likes']]
+
+    return clean_df
+
 #------------------------------ MAIN PROGRAMM ------------------------------
 db = 0
 # Open database connection
@@ -90,7 +133,7 @@ def render_search():
             cols_user= ['Username',
             'Followers',
             'Friends','Favorites','Tweets'],cols_tweets=['Text',
-            'Date-Time','Hashtags','Source','Language',
+            'Date-Time','Hashtags','Language',
             'Favorites','Retweets'],
             public_tweets=public_tweets)
         if _fb_name:
@@ -109,24 +152,19 @@ def home():
     response = [tweet._json for tweet in public_tweets]
     return jsonify(response)
 
-# @app.route('/twitter?user=<username>',methods=['POST'])
-# def profile(username):
-#     response = [tweet._json for tweet in public_tweets]
-#     return jsonify(response)
-
 @app.route('/alias', methods=['GET', 'POST'])
 def alias():
     if request.method == 'POST':
         print(request.form)
         print(request.values)
         (_twitter_id, _fb_id)=ast.literal_eval(request.form.get('aid'))
-        public_tweets=SearchTableTwitterUsers(_twitter_id)
-        post_list=SearchTableFBUsers(_fb_id)
+        public_tweets=SearchTableTwitterUsers(int(_twitter_id))
+        post_list=SearchTableFBUsers(int(_fb_id))
         return render_template('results.html',
             cols_user= ['Username',
             'Followers',
             'Friends','Favorites','Tweets'],cols_tweets=['Text',
-            'Date-Time','Hashtags','Source','Language',
+            'Date-Time','Hashtags','Language',
             'Favorites','Retweets'],
             public_tweets=public_tweets,
             cols_fb_user= ['Username'],cols_posts=['Text',
@@ -135,10 +173,36 @@ def alias():
     alias_list = enumerateAlias()
     return render_template('alias.html',items=alias_list)
 
-# @app.route('/alias?aid=<alias>',methods=['POST'])
-# def search(aid):
-#         response = [tweet._json for tweet in public_tweets]
-#         return jsonify(response)
+@app.route('/analytics', methods=['GET', 'POST'])
+def analytics():
+    if request.method == 'POST':
+        print(request.form)
+        print(request.values)
+        (_twitter_id, _fb_id)=ast.literal_eval(request.form.get('aid'))
+        public_tweets=SearchTableTwitterUsers(int(_twitter_id))
+        # post_list=SearchTableFBUsers(int(_fb_id))
+        # df_post_list=clean_data(post_list,'posts')
+        df_tweets_list = clean_data(public_tweets,'tweets')
+
+
+        # dfs = merge(df_tweets_list.rename(columns={'created_at':'time'}),
+        #            df_post_list,
+        #            on='time',
+        #            how = 'outer')
+        # fig_metrics=px.line(dfs,x='time',y=['shares',
+        #                                   'comments',
+        #                                   'likes',
+        #                                   'retweet_count',
+        #                                   'favorite_count'
+        #                                   ])
+        fig_metrics=px.line(df_tweets_list,x='created_at',y=[
+                                          'retweet_count',
+                                          'favorite_count'
+                                          ])
+        fig_metrics.write_html("templates/fig.html")
+        return render_template('fig.html')
+    alias_list = enumerateAlias()
+    return render_template('analytics.html',items=alias_list)
 
 if __name__ == '__main__':
     app.run()

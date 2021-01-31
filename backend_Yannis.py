@@ -11,6 +11,7 @@ import facebook_scraper
 import tweepy
 from pandas import read_csv
 from datetime import datetime
+from json import load
 from urllib.error import HTTPError
 
 
@@ -90,6 +91,7 @@ def CreateTableFBPosts():
     PID BIGINT NOT NULL,
     UID_POST BIGINT NOT NULL,
     TITLE VARCHAR(1024),
+    CREATED_AT DATETIME,
     LIKES INT,
     COMMENTS INT,
     SHARES INT,
@@ -126,12 +128,12 @@ def insertValueFBUsers(user_id, fb_user):
 
 #--------------------------------------------------------------------------
 
-def insertValueFBPosts(post_id, user_id, title, likes, comments, shares):
+def insertValueFBPosts(post_id, user_id, title, time, likes, comments, shares):
   if((post_id == 'None') or (user_id == 'None')):
       return
-  sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, LIKES, COMMENTS, SHARES) \
-	VALUES ('%d', '%d', '%s', '%d', '%d', '%d')""" % \
-	(int(post_id), int(user_id), title, likes, comments, shares)
+  sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, CREATED_AT, LIKES, COMMENTS, SHARES) \
+	VALUES ('%d', '%d', '%s', '%s' ,'%d', '%d', '%d')""" % \
+	(int(post_id), int(user_id), title, time, likes, comments, shares)
 
   try:
     # Execute the SQL command
@@ -155,6 +157,7 @@ def RecordFBValuesToDB(fb_user, post_list):
             insertValueFBPosts(str(post['post_id']),
             user_id,
             str(post['text']),
+            post['time'].strftime("%Y-%m-%d %H:%M:%S"),
             int(post['likes']),
             int(post['comments']),
             int(post['shares']))
@@ -164,8 +167,8 @@ def RecordFBValuesToDB(fb_user, post_list):
 def fb_scraper(fb_user):
     try:
         get_p = facebook_scraper.get_posts(fb_user, pages=15)
-    except convertapi.exceptions.ApiError as ex:
-        logger.error('Failed with exception [%s]' % ex)
+    except HTTPError as ex:
+        print('Failed with exception [%s]' % ex)
         get_p = []
 
     post_list = []
@@ -313,9 +316,9 @@ def twitter_api():
     # Load credentials from json file
     with open("twitter_credentials.json", "r") as file:
         creds = load(file)
-    auth = OAuthHandler(creds['CONSUMER_KEY'], creds['CONSUMER_SECRET'])
+    auth = tweepy.OAuthHandler(creds['CONSUMER_KEY'], creds['CONSUMER_SECRET'])
     auth.set_access_token(creds['ACCESS_TOKEN'], creds['ACCESS_SECRET'])
-    return API(auth)
+    return tweepy.API(auth)
 
 #--------------------------------------------------------------------------
 
@@ -328,9 +331,7 @@ def twitter_scrapper(twitter_user):
         tweets_list = []
         for status in tweepy.Cursor(api.user_timeline, id = twitter_user, tweet_mode="extended").items(200):
             tweets_list.append(status)
-        user_id=tweets_list[0].user.id
     except:
-        user_id=[]
         tweets_list=[]
 
     return tweets_list
@@ -351,16 +352,20 @@ CreateTableTwitterUsers()
 CreateTableTwitterPosts()
 CreateTableAlias()
 
+# Read list of usernames from csv
 try:
     df = read_csv("usernames_.csv",encoding = "ISO-8859-7",delimiter=";")
 except:
     print ("Usernames file error!\n")
     df=[]
 
+# Retrieve tweets
 for i in range (40, len(df)):
     twitter_user=df["Twitter"][i]
     print("Start twitter crawl ",datetime.now().strftime("%H:%M:%S"))
     tweets_list = twitter_scrapper(twitter_user)
+    
+    # Save tweets to DB
 
     try:
         user_id=tweets_list[0].user.id
@@ -368,11 +373,15 @@ for i in range (40, len(df)):
         RecordTwitterValuesToDB(tweets_list)
     except:
         user_id = 0
+        
+    # Retrieve FB posts
 
     fb_user=df["Facebook"][i]
     print("Start FB crawl ",datetime.now().strftime("%H:%M:%S"))
     post_list = fb_scraper(fb_user)
 
+    # Save FB posts to DB
+    
     try:
         fb_id=int(post_list[0]['user_id'])
         print("Start Store Posts to DB ",datetime.now().strftime("%H:%M:%S"))
@@ -380,6 +389,8 @@ for i in range (40, len(df)):
     except:
         fb_id=0
 
+ # Save relation between FB and twitter users
+ 
     if (user_id & fb_id):
         alias=twitter_user+" - "+fb_user
         print("Start Aliases ",datetime.now().strftime("%H:%M:%S"))

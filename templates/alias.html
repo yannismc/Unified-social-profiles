@@ -6,18 +6,18 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 <link href="{{url_for('static', filename='search.css')}}" rel="stylesheet">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!--Dropdwon button-->
 <script>
 
-$(function() {
-  $("#btnAlias").click(function(){
-    $.post('alias', $("#aliaSelect").serialize(),
-    function(response) {
+function updateResults(){
+  $.post('alias', $("#aliaSelect").serialize(),
+  function(response) {
 $("#place_for_results").html(response);
 }).fail(function(error) {
-        console.log(error);
+      console.log(error);
 });
-});
-});
+}
+
 </script>
 </head>
 
@@ -33,7 +33,7 @@ $("#place_for_results").html(response);
           </li>
           <li role="presentation"><a href="/users">Users</a>
           </li>
-          <li role="presentation"><a href="#">Posts/Tweets</a>
+          <li role="presentation"><a href="/analytics">Posts/Tweets</a>
           </li>
         </ul>
       </nav>
@@ -43,15 +43,14 @@ $("#place_for_results").html(response);
 
       <div class="jumbotron">
         <h1>Aliases:</h1>
-        <form class="form-user-alias">
-          <select name="aid" class="alias-class" id="aliaSelect">
+          <form class="form-user-search">
+            <select onchange="updateResults()" class="form-control form-control-lg" name="aid" id="aliaSelect" autofocus>
             {% for item in items %}
             <option value="{{ item[1:3] }}">{{ item[0] }}</option>
             {% endfor %}
           </select>
-          <button id="btnAlias" class="btn btn-lg btn-primary btn-block" type="button">Show</button>
 
-        </form>
+          </form>
       </div>
 
 <div id="place_for_results"></div>

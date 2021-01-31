@@ -11,7 +11,7 @@ import facebook_scraper
 import tweepy
 import csv
 from pandas import read_csv
-
+import datetime
 #------------------------------ FB FUNCTIONS ------------------------------
 
 
@@ -39,6 +39,7 @@ def CreateTableFBPosts():
     LIKES INT,
     COMMENTS INT,
     SHARES INT,
+    TIME DATETIME,
 PRIMARY KEY (PID),
 FOREIGN KEY (UID_POST)
  REFERENCES fb_users(UID))"""
@@ -61,12 +62,12 @@ def insertValueFBUsers(user_id, fb_user):
     db.rollback()
 
 
-def insertValueFBPosts(post_id, user_id, title, likes, comments, shares):
+def insertValueFBPosts(post_id, user_id, title, likes, comments, shares, time):
   if((post_id == 'None') or (user_id == 'None')):
       return
-  sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, LIKES, COMMENTS, SHARES) \
-	VALUES ('%d', '%d', '%s', '%d', '%d', '%d')""" % \
-	(int(post_id), int(user_id), title, likes, comments, shares)
+  sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, LIKES, COMMENTS, SHARES, ΤΙΜΕ) \
+	VALUES ('%d', '%d', '%s', '%d', '%d', '%d', '%m-%d-%y')""" % \
+	(int(post_id), int(user_id), title, likes, comments, shares, time)
     
   try:
     # Execute the SQL command
@@ -85,7 +86,7 @@ def RecordFBValuesToDB(fb_user, post_list):
 # key from dictionaries
     for i in range (0, len(post_list)):
         post = post_list[i]
-        insertValueFBPosts(str(post['post_id']), user_id, str(post['text']), int(post['likes']), int(post['comments']), int(post['shares']))
+        insertValueFBPosts(str(post['post_id']), user_id, str(post['text']), int(post['likes']), int(post['comments']), int(post['shares']), str(post['time']))
 
 
 def fb_scraper(fb_user):
@@ -241,9 +242,9 @@ for fb_user in df["Facebook"]:
     RecordFBValuesToDB(fb_user, post_list)
 
 
-for twitter_user in df["Twitter"]:
-    user_id, tweets_list = twitter_api(twitter_user)
-    RecordTwitterValuesToDB(twitter_user, user_id, tweets_list)
+#for twitter_user in df["Twitter"]:
+   # user_id, tweets_list = twitter_api(twitter_user)
+   # RecordTwitterValuesToDB(twitter_user, user_id, tweets_list)
 
 
 
