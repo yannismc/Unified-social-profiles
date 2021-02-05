@@ -24,6 +24,15 @@ time;time;time
 google;google;google
 ...
 ```
+4. _twitter_credential.json_ file with your credential in the following form
+```
+{
+  "CONSUMER_KEY": "...",
+  "CONSUMER_SECRET": "",
+  "ACCESS_TOKEN": "...",
+  "ACCESS_SECRET": "..."
+}
+```
 Requirements before running frontend.py script:
 1. Install through **pip** or other means at your python installation
 * Flask
