@@ -1,7 +1,48 @@
 # Unified social profiles
 __Description__
 
-Δηµιουργία εφαρµογής παρουσίασης ενοποιηµένων προφίλ χρηστών από διαφορετικά κοινωνικά δίκτυα (π.χ. Twitter, Facebook, Instagram) και αλληλεπίδραση µε αυτά
+Δηµιουργία εφαρµογής παρουσίασης ενοποιηµένων προφίλ χρηστών από διαφορετικά κοινωνικά δίκτυα (π.χ. Twitter, Facebook, Instagram)
+
+## Installatoion notes
+
+Requirements before running _backend.py_ script:
+1. Setup at **localhost** a MySQL database with utf-8 encoding named _socialmedia_db_ accesed with username **root** and no password ""
+Of course these parameters can be changed at line 291 (or alternatively 490) of _backend.py_
+
+2. Install through **pip** or other means at your python installation
+* a python MySQL connector of your choice ( mysql.connector, MySQLdb, etc..), choose approprietely at line 8 and  9 of script.
+* facebook_scrapper from https://github.com/kevinzg/facebook-scraper/tree/master/facebook_scraper
+* tweepy library
+```python
+pip install tweepy
+```
+3. A comma-separated file named _usernames.csv_ that has columns **Twitter** and **Facebook** of profiles' usernames.
+```
+Twitter;Facebook;Instagram
+cnn;cnn;cnn
+time;time;time
+google;google;google
+...
+```
+Requirements before running frontend.py script:
+1. Install through **pip** or other means at your python installation
+* Flask
+```python
+pip install Flask
+```
+* plotly
+```python
+pip install plotly==4.14.3
+```
+or
+```python
+conda install -c plotly plotly=4.14.3
+```
+* dash
+```python
+pip install dash==1.19.0
+```
+* a python MySQL connector of your choice ( mysql.connector, MySQLdb, etc..), choose approprietely at line 8 and  9 of script.
 
 ## First meeting notes (09/11/2020)
 
