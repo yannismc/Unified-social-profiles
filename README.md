@@ -3,7 +3,7 @@ __Description__
 
 Δηµιουργία εφαρµογής παρουσίασης ενοποιηµένων προφίλ χρηστών από διαφορετικά κοινωνικά δίκτυα (π.χ. Twitter, Facebook, Instagram)
 
-## Installatoion notes
+## Installation notes
 
 Requirements before running _backend.py_ script:
 1. Setup at **localhost** a MySQL database with utf-8 encoding named _socialmedia_db_ accesed with username **root** and no password ""
