@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Sun Nov 15 00:09:30 2020
 
-from flask import Flask,render_template, request
+
+"""
+
 import mysql.connector as MySQLdb
-import ast
+#import MySQLdb
+from flask import Flask,render_template, request
+from ast import literal_eval
 import plotly.express as px
 from pandas import DataFrame, merge
 from plotly.subplots import make_subplots
@@ -18,19 +24,18 @@ def SearchTableFBUsers(user_name):
         SELECT NAME,TITLE,CREATED_AT,SHARES,COMMENTS,LIKES
         FROM `fb_posts`
         INNER JOIN `fb_users` ON `fb_users`.UID=`fb_posts`.UID_POST
-        WHERE `fb_users`.UID = %d
-        """ % \
-        (user_name)
+        WHERE `fb_users`.UID = %s
+        """
     if type(user_name) is str:
         sql = """SELECT NAME,TITLE,CREATED_AT,SHARES,COMMENTS,LIKES
             FROM `fb_posts`
             INNER JOIN `fb_users` ON `fb_users`.UID=`fb_posts`.UID_POST
             WHERE `fb_users`.NAME=%s
-            """ % \
-            (str(user_name))
+            """
+    user_search=(str(user_name),)
     try:
         # Execute the SQL command
-        cursor.execute(sql)
+        cursor.execute(sql,user_search)
         sql_results=cursor.fetchall()
     except ValueError as e :
         print('SearchTableFBUsers:DB error',sql,'\n',e,"\n")
@@ -107,14 +112,14 @@ def extarct_hashtags(tweets_list,df_post_list):
         for h in hashtag:
             hashtag_list.append(h)
     for text in df_post_list['TITLE']:
-        for word in text.split(): 
-          
-        # checking the first charcter of every word 
-            if word[0] == '#': 
-              
-            # adding the word to the hashtag_list 
+        for word in text.split():
+
+        # checking the first charcter of every word
+            if word[0] == '#':
+
+            # adding the word to the hashtag_list
                 hashtag_list.append(word[1:])
-    
+
     return hashtag_list
 
 
@@ -187,7 +192,7 @@ def analytics():
     if request.method == 'POST':
         print(request.form)
         print(request.values)
-        (twitter_id, fb_id)=ast.literal_eval(request.form.get('aid'))
+        (twitter_id, fb_id)=literal_eval(request.form.get('aid'))
         public_tweets=SearchTableTwitterUsers(int(twitter_id))
         post_list=SearchTableFBUsers(int(fb_id))
         df_post_list=clean_data(post_list,'posts')
@@ -231,18 +236,20 @@ def hashtags():
     if request.method == 'POST':
         print(request.form)
         print(request.values)
-        (twitter_id, fb_id)=ast.literal_eval(request.form.get('aid'))
+        (twitter_id, fb_id)=literal_eval(request.form.get('aid'))
         public_tweets=SearchTableTwitterUsers(int(twitter_id))
         post_list=SearchTableFBUsers(int(fb_id))
         df_post_list=clean_data(post_list,'posts')
         df_tweets_list = clean_data(public_tweets,'tweets')
         z=extarct_hashtags(df_tweets_list,df_post_list)
         data = Counter(z)
+        data= dict(sorted(data.items(), key=lambda item: item[1],reverse=True))
         fig = go.Figure(data=[go.Table(header=dict(
-            values=["Hashtag","Values"]),
-        cells=dict(values=[list(data.keys()),list(data.values())]))])
+            values=["Hashtag","Occurences"]),
+        cells=dict(values=[list(data.keys())[:10],list(data.values())[:10]]))])
 
         fig.write_html("templates/fig2.html")
+
         return render_template('fig2.html')
     alias_list = enumerateAlias()
     return render_template('hashtags.html',items=alias_list)

@@ -12,9 +12,9 @@
     <script>
 
     function updateResults(){
-      $.post('analytics', $("#aliaSelect").serialize(),
+      $.post('hashtags', $("#aliaSelect").serialize(),
       function(response) {
-    $("#place_for_results").html(response);
+    $("#place_for_table").html(response);
     }).fail(function(error) {
           console.log(error);
     });
@@ -56,8 +56,7 @@
           </form>
       </div>
 
-<div id="place_for_results"></div>
-
+<div id="place_for_table"></div>
 
       <footer class="footer">
           <p>&copy; 2020, backend: BPa - frontend:JAx</p>

@@ -26,7 +26,7 @@ def checkTableExists(tablename):
 
 
 def CreateTableFBUsers():
-    
+
     if(checkTableExists('fb_users') == True):
         return
 
@@ -39,7 +39,7 @@ def CreateTableFBUsers():
     cursor.execute(sql)
 
 def CreateTableFBPosts():
-    
+
     if(checkTableExists('fb_posts') == True):
         return
 
@@ -80,7 +80,7 @@ def insertValueFBPosts(post_id, user_id, title, likes, comments, shares, time):
   sql = """INSERT INTO fb_posts (PID, UID_POST, TITLE, LIKES, COMMENTS, SHARES, TIME) \
 	VALUES ('%d', '%d', '%s', '%d', '%d', '%d', '%s')""" % \
 	(int(post_id), int(user_id), title, likes, comments, shares, time)
-    
+
   try:
     # Execute the SQL command
     cursor.execute(sql)
@@ -93,7 +93,7 @@ def insertValueFBPosts(post_id, user_id, title, likes, comments, shares, time):
 
 def RecordFBValuesToDB(fb_user, post_list):
     user_id = post_list[0]['user_id']
-    
+
     #Get all existing fb users
     cursor.execute("SELECT * FROM fb_users")
     myresult = cursor.fetchall()
@@ -103,7 +103,7 @@ def RecordFBValuesToDB(fb_user, post_list):
             exist_user = True
         else:
             exist_user = False
-            
+
     if(exist_user == False):
         insertValueFBUsers(user_id, fb_user)
 
@@ -112,7 +112,7 @@ def RecordFBValuesToDB(fb_user, post_list):
 	(user_id)
     cursor.execute(sql)
     myresult = cursor.fetchall()
-    
+
 # key from dictionaries
     for i in range (0, len(post_list)):
         post = post_list[i]
@@ -125,13 +125,13 @@ def RecordFBValuesToDB(fb_user, post_list):
                     exist_post = False
             except:
                 exist_post = False
-               
+
         if(exist_post == False):
             insertValueFBPosts(str(post['post_id']), user_id, str(post['text']), int(post['likes']), int(post['comments']), int(post['shares']), post['time'].strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def fb_scraper(fb_user):
-    get_p = facebook_scraper.get_posts(fb_user, pages=150)
+    get_p = facebook_scraper.get_posts(fb_user, pages=2)
     post_list = []
 
     for post in get_p:
@@ -198,7 +198,7 @@ def insertValueTwitterPosts(tweet_id, user_id, title, retweet_count, favorite_co
   sql = """INSERT INTO twitter_tweets (TID, UID_TWEET, TITLE, RETWEET_COUNT, FAVORITE_COUNT, CREATED_AT, LANGUAGE, SOURCE, HASHTAGS) \
 	VALUES ('%d', '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%s')""" % \
 	(int(tweet_id), int(user_id), title, retweet_count, favorite_count, created_at, lang, source_url, hashtags)
-    
+
   try:
     # Execute the SQL command
     cursor.execute(sql)
@@ -214,7 +214,7 @@ def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
     tweet_model = tweets_list[0]
     tweet = tweet_model._json
     tweet_usr = tweet['user']
-    
+
     #Get all existing twitter users
     cursor.execute("SELECT * FROM twitter_users")
     myresult = cursor.fetchall()
@@ -224,23 +224,23 @@ def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
             exist_user = True
         else:
             exist_user = False
-            
+
     if(exist_user == False):
         insertValueTwitterUsers(user_id, twitter_user, tweet_usr['favourites_count'], tweet_usr['followers_count'], tweet_usr['friends_count'], tweet_usr['statuses_count'])
-    
+
     #Get all existing posts from fb user
     sql = """SELECT * FROM twitter_tweets WHERE UID_TWEET = '%s'""" % \
 	(user_id)
     cursor.execute(sql)
     myresult = cursor.fetchall()
-    
-    
+
+
     for i in range (0, len(tweets_list)):
         tweet_model = tweets_list[i]
         tweet = tweet_model._json
         #Get the source url
         source_url = 'https://twitter.com/' + str(twitter_user) + '/status/' + str(tweet['id'])
-        
+
         #Get the hashtags
         hashtags = ''
         for j in range (0, len(tweet['entities']['hashtags'])):
@@ -248,7 +248,7 @@ def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
                 hashtags += tweet['entities']['hashtags'][j]['text']
             else:
                 hashtags += tweet['entities']['hashtags'][j]['text'] + ', '
-        
+
         exist_tweet = False
         for exist_tweets in myresult:
             try:
@@ -258,7 +258,7 @@ def RecordTwitterValuesToDB(twitter_user, user_id, tweets_list):
                    exist_tweet = False
             except:
                 exist_tweet = False
-               
+
         if(exist_tweet == False):
             insertValueTwitterPosts(str(tweet['id']), user_id, str(tweet['full_text']), int(tweet['retweet_count']), int(tweet['favorite_count']), str(tweet['created_at']), str(tweet['lang']), str(source_url), str(hashtags))
 
@@ -277,7 +277,7 @@ def twitter_api(twitter_user):
 
     tweets_list = []
 
-    for status in tweepy.Cursor(api.user_timeline, twitter_user, tweet_mode="extended").items(600):
+    for status in tweepy.Cursor(api.user_timeline, twitter_user, tweet_mode="extended").items(15):
         tweets_list.append(status)
 
     return user_id, tweets_list
@@ -301,7 +301,7 @@ CreateTableTwitterPosts()
 
 
 try:
-    df = read_csv("usernames_.csv",encoding = "ISO-8859-7",delimiter=";")
+    df = read_csv("usernames.csv",encoding = "ISO-8859-7",delimiter=";")
 except:
     print ("Usernames file error!\n")
     df=[]
